@@ -1,6 +1,11 @@
 # Release Notes for Feed Me 4.x
 
-## Unreleased
+## 4.7.1 - 2023-10-31
+
+- Forked so we can add required features to C3 version of this plugin
+- Applied path to Matrix block imports from C4 version
+
+## Unreleased - From P&T
 
 - Fixed a bug where you could not override feed settings with `false` if you used a `config/feed-me.php` config file. ([#1352](https://github.com/craftcms/feed-me/issues/1352))
 - Fixed a bug where `queueTtr`, `queueMaxRetry`, and `assetDownloadCurl` settings were being ignored if you used a `config/feed-me.php` config file. ([#1356](https://github.com/craftcms/feed-me/issues/1356))
