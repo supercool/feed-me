@@ -1,5 +1,9 @@
 # Release Notes for Feed Me 4.x
 
+## 4.9.1 - 2023-10-31
+
+- Applied patch to respect bool and numeric values for lightswitches
+
 ## 4.9.0 - 2023-10-31
 
 - Forked so we can add required features to C3 version of this plugin
