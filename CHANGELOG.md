@@ -1,5 +1,10 @@
 # Release Notes for Feed Me 4.x
 
+## 4.9.0 - 2023-10-31
+
+- Forked so we can add required features to C3 version of this plugin
+- Applied patch to Matrix block imports from C4 version
+
 ## 4.8.1 - 2024-02-25
 
 - Fixed a bug where the Entry Type wouldn’t be remembered for related Entry fields in a feed’s mappings. ([#1387](https://github.com/craftcms/feed-me/issues/1387), [#1390](https://github.com/craftcms/feed-me/pull/1390))
@@ -109,7 +114,7 @@
 ## 4.4.3 - 2022-04-06
 
 ### Added
-- It’s now possible to set the plugin to use a custom queue, by overriding `craft\feedme\Plugin::$queue` via `craft\services\Plugins::$pluginConfigs`, in `config/app.php`. ([craftcms/cms#5492](https://github.com/craftcms/cms/issues/5492)) 
+- It’s now possible to set the plugin to use a custom queue, by overriding `craft\feedme\Plugin::$queue` via `craft\services\Plugins::$pluginConfigs`, in `config/app.php`. ([craftcms/cms#5492](https://github.com/craftcms/cms/issues/5492))
 
 ### Fixed
 - Fixed a bug where importing in Multi-select containing Optgroup would fail.
@@ -135,7 +140,7 @@
 - The `feedId` is now passed as a parameter into the `beforeFetchFeed` and `afterFetchFeed` events.
 - `craft\services\Process::processFeed()` now accepts a `$feedData` parameter that can be used to override the feed data.
 
-### Fixed 
+### Fixed
 - Fixed a bug where mapped values could get stripped of leading zeros when doing content comparisons.
 - Fixed a bug where creating or editing a feed would render an error if you were on Craft 3.7.24 or later. ([#1065](https://github.com/craftcms/feed-me/issues/1065))
 
