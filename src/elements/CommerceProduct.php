@@ -13,6 +13,7 @@ use craft\commerce\elements\Variant as VariantElement;
 use craft\commerce\models\inventory\UpdateInventoryLevel;
 use craft\commerce\models\InventoryLevel;
 use craft\commerce\Plugin as Commerce;
+use craft\commerce\queue\jobs\CatalogPricing;
 use craft\db\Query;
 use craft\feedme\base\Element;
 use craft\feedme\events\FeedProcessEvent;
@@ -28,6 +29,8 @@ use craft\helpers\Json;
 use DateTime;
 use Exception;
 use yii\base\Event;
+use yii\queue\PushEvent;
+use yii\queue\Queue;
 
 /**
  *
@@ -51,6 +54,12 @@ class CommerceProduct extends Element
      * @var string
      */
     public static string $class = ProductElement::class;
+
+    /**
+     * @var bool
+     * @since x.x.x
+     */
+    private bool $_runCatalogPricingJob = false;
 
     // Templates
     // =========================================================================
@@ -95,7 +104,7 @@ class CommerceProduct extends Element
                 $this->_checkForVariantMatches($event);
             }
         });
-        
+
         Event::on(Process::class, Process::EVENT_STEP_BEFORE_PARSE_CONTENT, function(FeedProcessEvent $event) {
             if ($event->feed['elementType'] === ProductElement::class) {
                 // at this point we've matched existing elements;
@@ -125,6 +134,19 @@ class CommerceProduct extends Element
             if ($event->feed['elementType'] === ProductElement::class) {
                 $this->_inventoryUpdate($event);
             }
+        });
+
+        // While imports are happening don't process any catalog pricing jobs
+        Event::on(Queue::class, Queue::EVENT_BEFORE_PUSH, function(PushEvent $event) {
+            if ($event->job instanceof CatalogPricing::class && !$this->_runCatalogPricingJob) {
+                $event->handled = true;
+            }
+        });
+
+        // After the feed has run, create a catalog pricing job to update the pricing
+        Event::on(Process::class, Process::EVENT_AFTER_PROCESS_FEED, function(FeedProcessEvent $event) {
+            $this->_runCatalogPricingJob = true;
+            Commerce::getInstance()->getCatalogPricing()->createCatalogPricingJob();
         });
     }
 
