@@ -138,7 +138,7 @@ class CommerceProduct extends Element
 
         // While imports are happening don't process any catalog pricing jobs
         Event::on(Queue::class, Queue::EVENT_BEFORE_PUSH, function(PushEvent $event) {
-            if ($event->job instanceof CatalogPricing::class && !$this->_runCatalogPricingJob) {
+            if ($event->job instanceof CatalogPricing && !$this->_runCatalogPricingJob) {
                 $event->handled = true;
             }
         });
