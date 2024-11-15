@@ -1,5 +1,9 @@
 # Release Notes for Feed Me
 
+## Unreleased
+
+- Imported Commerce Products now add a single Catalog Pricing job to the queue after an import, instead of one per Product. ([#1547](https://github.com/craftcms/feed-me/pull/1547)) 
+
 ## 6.5.0 - 2024-10-15
 
 - Added support for propagating Commerce Products and Variants in multi-site installs. ([#1531](https://github.com/craftcms/feed-me/pull/1531))
