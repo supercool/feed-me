@@ -29,6 +29,9 @@ jobs:
   build:
     name: Build VitePress Site
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     outputs:
       short_hash: ${{ steps.hash.outputs.short_hash }}
     steps:
