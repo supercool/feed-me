@@ -152,6 +152,9 @@ class Categories extends Field implements FieldInterface
                 $columnName = Craft::$app->getFields()->oldFieldColumnPrefix . $match;
             }
 
+            if ($groupId) {
+                $criteria['groupId'] = $groupId;
+            }
             $criteria['status'] = null;
             $criteria['limit'] = $limit;
             $criteria['where'] = ['=', $columnName, $dataValue];
