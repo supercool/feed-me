@@ -1,6 +1,6 @@
 # Configuration
 
-Create an `feed-me.php` file under your `/config` directory with the following options available to you. You can also use multi-environment options to change these per environment.
+Create a `feed-me.php` file under your `/config` directory with any of the following. Feed Me’s configuration file allows customization [per-environment](https://craftcms.com/docs/4.x/config/#multi-environment-configs) and [per-feed](#configuration-options) (see `feedOptions`).
 
 ```php
 <?php
