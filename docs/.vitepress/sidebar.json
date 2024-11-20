@@ -4,7 +4,6 @@
     "items": [
       {"text": "Introduction", "link": "/"},
       {"text": "Installation", "link": "get-started/installation-setup"},
-      {"text": "Requirements", "link": "get-started/requirements"},
       {"text": "Configuration", "link": "get-started/configuration"}
     ]
   },
