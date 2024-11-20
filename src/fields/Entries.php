@@ -164,7 +164,7 @@ class Entries extends Field implements FieldInterface
 
             $criteria['status'] = null;
             $criteria['limit'] = $limit;
-            $criteria[$match] = $dataValue;
+            $criteria[$match] = Db::escapeParam($dataValue);
 
             Craft::configure($query, $criteria);
 
