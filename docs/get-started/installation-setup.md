@@ -1,10 +1,13 @@
 # Installation & Setup
+You can install Feed Me with the in-app [Plugin Store](https://plugins.craftcms.com), or via Composer.
 
-You can install Feed Me via the [Plugin Store](https://plugins.craftcms.com), or with Composer.
+### Requirements
+
+Feed Me 6.x requires Craft CMS 5.0.0 or newer.
 
 ### Craft Plugin Store
 
-Navigate to the **Plugin Store** section of your Craft control panel, search for _Feed Me_, and click the **Try** button.
+To install **Feed Me**, navigate to the _Plugin Store_ section of your Craft control panel, search for `Feed Me`, and click the _Try_ button.
 
 ### Composer
 
