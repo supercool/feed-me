@@ -143,6 +143,10 @@ class Categories extends Field implements FieldInterface
                 }
             }
 
+            if ($groupId) {
+                $criteria['groupId'] = $groupId;
+            }
+
             $criteria['status'] = null;
             $criteria['limit'] = $limit;
             $criteria[$match] = $dataValue;
