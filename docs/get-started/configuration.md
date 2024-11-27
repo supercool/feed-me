@@ -53,6 +53,7 @@ return [
 - `queueTtr` — Set the 'time to reserve' time in seconds, to prevent the job being cancelled after 300 seconds (default).
 - `queueMaxRetry` — Set the maximum amount of retries the queue job should have before failing.
 - `assetDownloadCurl` — Use curl to download assets from a remote source. Can be used when issues arise using the default implementation.
+- `assetDownloadGuzzle` — Use Guzzle to download assets from a remote source. Can be used when issues arise using the default implementation.
 - `feedOptions` — Provide an array of any of the above options (or [feed settings](../feature-tour/feed-overview.md)) to set or override for specific feeds, keyed by their existing feed IDs. _Note that feed IDs may be different across environments!_
 
 #### Example `requestOptions`

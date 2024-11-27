@@ -1,5 +1,9 @@
 # Release Notes for Feed Me
 
+## Unreleased
+
+- Added the `assetDownloadGuzzle` config setting which defaults to `false`. When it is set to `true`, Feed Me will use Guzzle to download assets instead curl directly. ([#1549](https://github.com/craftcms/feed-me/pull/1549))
+
 ## 5.8.2 - 2024-10-15
 
 - When duplicating a feed, a new passkey is generated instead of using the passkey on the original feed. ([#1534](https://github.com/craftcms/feed-me/pull/1534))
