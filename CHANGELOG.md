@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added the `assetDownloadGuzzle` config setting which defaults to `false`. When it is set to `true`, Feed Me will use Guzzle to download assets instead curl directly. ([#1549](https://github.com/craftcms/feed-me/pull/1549))
+- Fixed a bug where importing matching Categories could go awry if the source of the field is set to a group and not a custom source. ([#1550](https://github.com/craftcms/feed-me/pull/1550))
 
 ## 5.8.2 - 2024-10-15
 
