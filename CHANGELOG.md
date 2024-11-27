@@ -1,6 +1,6 @@
 # Release Notes for Feed Me
 
-## Unreleased
+## 6.6.0 - 2024-11-26
 
 - Added the `assetDownloadGuzzle` config setting which defaults to `false`. When it is set to `true`, Feed Me will use Guzzle to download assets instead curl directly. ([#1549](https://github.com/craftcms/feed-me/pull/1549))
 - Imported Commerce Products now add a single Catalog Pricing job to the queue after an import, instead of one per Product. ([#1547](https://github.com/craftcms/feed-me/pull/1547))
