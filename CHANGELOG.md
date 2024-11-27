@@ -5,6 +5,7 @@
 - Added the `assetDownloadGuzzle` config setting which defaults to `false`. When it is set to `true`, Feed Me will use Guzzle to download assets instead curl directly. ([#1549](https://github.com/craftcms/feed-me/pull/1549))
 - Imported Commerce Products now add a single Catalog Pricing job to the queue after an import, instead of one per Product. ([#1547](https://github.com/craftcms/feed-me/pull/1547))
 - Fixed a bug where importing matching Categories could go awry if the source of the field is set to a group and not a custom source. ([#1550](https://github.com/craftcms/feed-me/pull/1550))
+- Fixed a bug when importing Category fields that started with the string `not`. ([#1551](https://github.com/craftcms/feed-me/pull/1551))
 
 ## 6.5.0 - 2024-10-15
 
