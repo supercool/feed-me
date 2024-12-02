@@ -1,5 +1,9 @@
 # Release Notes for Feed Me
 
+## Unreleased
+
+- Fixed a PHP error that could occur if you did not have Commerce installed when running a feed. ([#1556](https://github.com/craftcms/feed-me/issues/1556)) 
+
 ## 6.6.0 - 2024-11-26
 
 - Added the `assetDownloadGuzzle` config setting which defaults to `false`. When it is set to `true`, Feed Me will use Guzzle to download assets instead curl directly. ([#1549](https://github.com/craftcms/feed-me/pull/1549))
