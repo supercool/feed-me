@@ -1,6 +1,6 @@
 # Release Notes for Feed Me
 
-## Unreleased
+## 6.6.1 - 2024-12-01
 
 - Fixed a PHP error that could occur if you did not have Commerce installed when running a feed. ([#1556](https://github.com/craftcms/feed-me/issues/1556)) 
 
