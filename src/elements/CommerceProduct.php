@@ -145,8 +145,9 @@ class CommerceProduct extends Element
 
         // After the feed has run, create a catalog pricing job to update the pricing
         Event::on(Process::class, Process::EVENT_AFTER_PROCESS_FEED, function(FeedProcessEvent $event) {
-            $this->_runCatalogPricingJob = true;
-            Commerce::getInstance()->getCatalogPricing()->createCatalogPricingJob();
+            if (Craft::$app->getPlugins()->isPluginEnabled('commerce') && $this->_runCatalogPricingJob = true) {
+                Commerce::getInstance()->getCatalogPricing()->createCatalogPricingJob();
+            }
         });
     }
 
