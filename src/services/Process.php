@@ -40,6 +40,11 @@ class Process extends Component
     private $_time_start;
 
     /**
+     * @var bool Whether the warning about the disabled `parseTwig` setting has been logged
+     */
+    private $_parseTwigWarningLogged = false;
+
+    /**
      * @var ElementInterface
      */
     private $_service;
@@ -412,22 +417,14 @@ class Process extends Component
         // Do the same with our custom field data
         $element->setFieldValues($fieldData);
 
-        // Now we've fully prepped our element, one last final check each attribute and field for Twig shorthand to parse
-        // We have to do this at the end, separately so we've got full access to the prepped element content
+        // Feed data is never rendered as Twig, regardless of the `parseTwig` setting (GHSA-r7f2-vrpq-8xhm)
         $parseTwig = Plugin::$plugin->service->getConfig('parseTwig', $feed['id']);
 
-        if ($parseTwig) {
-            foreach ($attributeData as $key => $value) {
-                $attributeData[$key] = DataHelper::parseFieldDataForElement($value, $element);
-            }
-
-            foreach ($fieldData as $key => $value) {
-                $fieldData[$key] = DataHelper::parseFieldDataForElement($value, $element);
-            }
-
-            // Set the attributes and fields again
-            $element->setAttributes($attributeData, false);
-            $element->setFieldValues($fieldData);
+        if ($parseTwig && !$this->_parseTwigWarningLogged) {
+            $this->_parseTwigWarningLogged = true;
+            $message = 'The `parseTwig` setting is enabled, but has no effect. Feed data is never rendered as Twig for security reasons.';
+            Craft::warning($message, __METHOD__);
+            Plugin::info($message);
         }
 
         // We need to keep these separate to apply to the element but required when matching against existing elements

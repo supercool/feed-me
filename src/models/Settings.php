@@ -64,7 +64,7 @@ class Settings extends Model
     public $csvColumnDelimiter = ',';
 
     /**
-     * @var array
+     * @var array|bool No longer has any effect: feed data is never rendered as Twig. Kept so existing config files don't error.
      */
     public $parseTwig = [];
 

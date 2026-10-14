@@ -9,7 +9,6 @@ use craft\feedme\models\FeedModel;
 use craft\feedme\Plugin;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use Throwable;
 
 class DataHelper
 {
@@ -209,21 +208,18 @@ class DataHelper
     }
 
     /**
+     * Previously rendered feed data as an object template when the `parseTwig` setting was enabled.
+     *
+     * Feed data must never be rendered as Twig (GHSA-r7f2-vrpq-8xhm), so this now returns the value untouched,
+     * regardless of the `parseTwig` setting.
+     *
      * @param $value
      * @param $element
-     * @return mixed|string
+     * @return mixed
+     * @deprecated in 4.9.2. Feed data is no longer rendered as Twig.
      */
     public static function parseFieldDataForElement($value, $element)
     {
-        if (is_string($value) && strpos($value, '{') !== false) {
-            // Make sure to wrap in try/catch, as if this is a literal '{' in content somewhere
-            // it won't be a field handle tag, causing the Twig Lexer to freak out. We ignore those errors
-            try {
-                $value = Craft::$app->getView()->renderObjectTemplate($value, $element);
-            } catch (Throwable $e) {
-            }
-        }
-
         return $value;
     }
 
