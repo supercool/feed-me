@@ -61,8 +61,8 @@ class AssetHelper
 
         $assetDownloadCurl = Plugin::$plugin->service->getConfig('assetDownloadCurl', $feedId);
 
-        // Provide some legacy support
-        if ($assetDownloadCurl) {
+        // Provide some legacy support (local files are always read with fopen(), so curl can't treat a path as a URL)
+        if ($assetDownloadCurl && $curlOptResolve !== null) {
             $fp = fopen($dstName, 'wb');
             $url = $srcName;
             $redirects = 0;
@@ -77,18 +77,16 @@ class AssetHelper
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 // redirects are followed manually, so that each redirect target can be validated
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-                if ($curlOptResolve !== null) {
-                    curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-                    // Pin the hostname/port to the IPs we just validated.
-                    curl_setopt($ch, CURLOPT_RESOLVE, $curlOptResolve);
-                }
+                curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+                // Pin the hostname/port to the IPs we just validated.
+                curl_setopt($ch, CURLOPT_RESOLVE, $curlOptResolve);
 
                 curl_exec($ch);
                 $statusCode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
                 $redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
                 curl_close($ch);
 
-                if ($curlOptResolve === null || $statusCode < 300 || $statusCode >= 400 || !$redirectUrl) {
+                if ($statusCode < 300 || $statusCode >= 400 || !$redirectUrl) {
                     break;
                 }
 
