@@ -1,5 +1,5 @@
 {
-  "name": "craftcms/feed-me",
+  "name": "supercool/feed-me",
   "description": "Import content from XML, RSS, CSV or JSON feeds into entries, categories, Craft Commerce products, and more.",
   "type": "craft-plugin",
   "keywords": [
@@ -35,7 +35,11 @@
     "jakeasmith/http_build_url": "^1.0",
     "nesbot/carbon": "^1.22 || ^2.10",
     "league/csv": "^8.2 || ^9.0",
-    "seld/jsonlint": "^1.7"
+    "seld/jsonlint": "^1.7",
+    "craftcms/url-validator": "^1.2"
+  },
+  "replace": {
+    "craftcms/feed-me": "self.version"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
