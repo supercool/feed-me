@@ -6,6 +6,7 @@ use ArrayAccess;
 use Cake\Utility\Hash;
 use Craft;
 use craft\base\Model;
+use craft\feedme\base\DataType;
 use craft\feedme\base\Element;
 use craft\feedme\base\ElementInterface;
 use craft\feedme\helpers\DuplicateHelper;
@@ -233,7 +234,8 @@ class FeedModel extends Model
      */
     public function getNextPagination(): bool
     {
-        if (!$this->paginationUrl || !filter_var($this->paginationUrl, FILTER_VALIDATE_URL)) {
+        // only ever follow http(s) pagination URLs, as they come from the feed content
+        if (!$this->paginationUrl || !DataType::isHttpUrl($this->paginationUrl)) {
             return false;
         }
 

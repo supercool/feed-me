@@ -6,6 +6,7 @@ use Cake\Utility\Hash;
 use Craft;
 use craft\base\Batchable;
 use craft\base\Component;
+use craft\feedme\Plugin;
 use craft\helpers\UrlHelper;
 
 /**
@@ -65,8 +66,31 @@ abstract class DataType extends Component implements Batchable
             $url = UrlHelper::hostInfo($feed->feedUrl) . $url;
         }
 
+        // Pagination URLs come from the feed content, so only ever follow http(s) URLs
+        if ($url && !self::isHttpUrl($url)) {
+            Plugin::error('Ignoring pagination URL `{url}` as only http and https URLs are allowed.', ['url' => is_scalar($url) ? $url : gettype($url)]);
+            $url = null;
+        }
+
         // Replace the mapping value with the actual URL
-        $feed->paginationUrl = $url;
+        $feed->paginationUrl = $url ?: null;
+    }
+
+    /**
+     * Returns whether the given value is an absolute http or https URL.
+     *
+     * @param mixed $url
+     * @return bool
+     */
+    public static function isHttpUrl(mixed $url): bool
+    {
+        if (!is_string($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+
+        return is_string($scheme) && in_array(strtolower($scheme), ['http', 'https'], true);
     }
 
     /**
