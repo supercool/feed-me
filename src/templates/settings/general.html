@@ -44,12 +44,6 @@
         instructions: 'Choose which tabs you would like to be shown.'|t('feed-me'),
     }) }}
 
-    <hr>
-
-    <a class="btn" href="{{ actionUrl('feed-me/base/clear-tasks') }}">
-        {{ "Clear pending job queue"|t('feed-me') }}
-    </a>
-
     {% endnamespace %}
 
     {{ parent() }}
