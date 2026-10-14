@@ -10,11 +10,6 @@ use yii\web\Response;
 
 class BaseController extends Controller
 {
-    /**
-     * @var string[]
-     */
-    protected int|bool|array $allowAnonymous = ['actionClearTasks'];
-
     // Public Methods
     // =========================================================================
 
@@ -38,6 +33,10 @@ class BaseController extends Controller
      */
     public function actionClearTasks(): Response
     {
+        // Deleting the whole queue is destructive, so restrict it to admins and POST requests
+        $this->requirePostRequest();
+        $this->requireAdmin(false);
+
         // Function to clear (delete) all stuck tasks.
         Craft::$app->getDb()->createCommand()
             ->delete('{{%queue}}')

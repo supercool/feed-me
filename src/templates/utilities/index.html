@@ -8,7 +8,9 @@
 {% set selectedTab = 'utilities' %}
 
 {% block content %}
-    <a class="btn" href="{{ actionUrl('feed-me/base/clear-tasks') }}">
-        {{ "Clear pending job queue"|t('feed-me') }}
-    </a>
+    <form method="post" accept-charset="UTF-8">
+        {{ actionInput('feed-me/base/clear-tasks') }}
+        {{ csrfInput() }}
+        <button type="submit" class="btn">{{ "Clear pending job queue"|t('feed-me') }}</button>
+    </form>
 {% endblock %}
