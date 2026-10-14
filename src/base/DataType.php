@@ -5,6 +5,7 @@ namespace craft\feedme\base;
 use Cake\Utility\Hash;
 use Craft;
 use craft\base\Component;
+use craft\feedme\helpers\BaseHelper;
 use craft\helpers\UrlHelper;
 
 /**
@@ -49,11 +50,16 @@ abstract class DataType extends Component
         $url = Hash::get($flatten, $feed->paginationNode);
 
         // resolve any aliases in the pagination URL
-        $url = Craft::getAlias($url);
+        $url = is_string($url) ? Craft::getAlias($url) : null;
 
         // if the feed provides a root relative URL, make it whole again based on the feed.
         if ($url && UrlHelper::isRootRelativeUrl($url)) {
             $url = UrlHelper::hostInfo($feed->feedUrl) . $url;
+        }
+
+        // Pagination URLs come from the feed's content, so only allow http(s) URLs (no local paths or other stream wrappers)
+        if (!BaseHelper::isHttpUrl($url)) {
+            $url = null;
         }
 
         // Replace the mapping value with the actual URL
