@@ -16,9 +16,13 @@ use craft\feedme\datatypes\Rss;
 use craft\feedme\datatypes\Xml;
 use craft\feedme\events\FeedDataEvent;
 use craft\feedme\events\RegisterFeedMeDataTypesEvent;
+use craft\feedme\helpers\BaseHelper;
+use craft\feedme\helpers\urlvalidator\GuzzleMiddleware;
+use craft\feedme\helpers\urlvalidator\UrlValidationException;
 use craft\feedme\models\FeedModel;
 use craft\feedme\Plugin;
 use craft\helpers\Component as ComponentHelper;
+use GuzzleHttp\RequestOptions;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
@@ -167,13 +171,23 @@ class DataTypes extends Component
         $url = Craft::getAlias($url);
 
         // Does this look like a local filesystem path?
-        if (@file_exists($url)) {
+        if (BaseHelper::isLocalPath($url) && @file_exists($url)) {
             error_clear_last();
 
             $filepath = realpath($url);
 
             if (!$filepath) {
                 $response = ['success' => false, 'error' => 'File path cannot be found.'];
+
+                return $this->_triggerEventAfterFetchFeed([
+                    'url' => $url,
+                    'feedId' => $feedId,
+                    'response' => $response,
+                ]);
+            }
+
+            if (!BaseHelper::isFilepathAllowed($filepath)) {
+                $response = ['success' => false, 'error' => 'Access to this file path is not permitted.'];
 
                 return $this->_triggerEventAfterFetchFeed([
                     'url' => $url,
@@ -201,9 +215,29 @@ class DataTypes extends Component
             ]);
         }
 
+        // validate
+        try {
+            $curlOptResolve = BaseHelper::urlValidator()->curlResolve((string)$url);
+        } catch (UrlValidationException $e) {
+            // the error will be logged from the datatype that called this method, so let's not duplicate that here
+            return $this->_triggerEventAfterFetchFeed([
+                'url' => $url,
+                'feedId' => $feedId,
+                'response' => ['success' => false, 'error' => $e->getMessage()],
+            ]);
+        }
+
         try {
             $client = Plugin::$plugin->service->createGuzzleClient($feedId);
-            $options = Plugin::$plugin->service->getRequestOptions($feedId);
+            $options = Plugin::$plugin->service->getRequestOptions($feedId) ?: [];
+            // Pin the hostname/port to the IPs we just validated.
+            $options['curl'][CURLOPT_RESOLVE] = $curlOptResolve;
+
+            // validate and pin every redirect target too
+            if (!GuzzleMiddleware::attach($client, BaseHelper::urlValidator())) {
+                // the client uses a custom handler, so only the pinned URL can be validated; don't follow redirects
+                $options[RequestOptions::ALLOW_REDIRECTS] = false;
+            }
 
             $resp = $client->request('GET', $url, $options);
             $data = (string)$resp->getBody();

@@ -102,4 +102,41 @@ class Settings extends Model
      * @var bool
      */
     public $assetDownloadCurl = false;
+
+    /**
+     * Hostnames that are allowed to resolve to private IP addresses, e.g. `'feeds.internal'` or `'*.ddev.site'`.
+     * A leading `*.` wildcard matches any subdomain. Can only be set in `config/feed-me.php`.
+     *
+     * @var string[]
+     * @since 4.9.2
+     */
+    public $allowedPrivateHosts = [];
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function fields()
+    {
+        $fields = parent::fields();
+        // allowedPrivateHosts, clientOptions, requestOptions, feedOptions can't be set from the UI so no point in storing them in the project config
+        unset($fields['allowedPrivateHosts'], $fields['clientOptions'], $fields['requestOptions'], $fields['feedOptions']);
+
+        return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        return array_merge(parent::extraFields(), [
+            'allowedPrivateHosts',
+            'clientOptions',
+            'requestOptions',
+            'feedOptions',
+        ]);
+    }
 }

@@ -24,6 +24,7 @@ return [
         'queueTtr' => null,
         'queueMaxRetry' => 5,
         'assetDownloadCurl' => false,
+        'allowedPrivateHosts' => [],
         'feedOptions' => [
             '1' => [
                 'feedUrl' => 'https://specialurl.io/feed.json',
@@ -53,6 +54,7 @@ return [
 - `queueTtr` — Set the 'time to reserve' time in seconds, to prevent the job being cancelled after 300 seconds (default).
 - `queueMaxRetry` — Set the maximum amount of retries the queue job should have before failing.
 - `assetDownloadCurl` — Use curl to download assets from a remote source. Can be used when issues arise using the default implementation.
+- `allowedPrivateHosts` — Hostnames that feed and asset URLs may use even though they resolve to private IP addresses (e.g. `'feeds.internal'`, or `'*.ddev.site'` to match any subdomain). All other URLs that resolve to private, reserved, loopback, link-local or cloud-metadata IP addresses are rejected. Can only be set in `config/feed-me.php`.
 - `feedOptions` — Provide an array of any of the above options (or [feed settings](../feature-tour/feed-overview.md)) to set or override for specific feeds, keyed by their existing feed IDs. _Note that feed IDs may be different across environments!_
 
 #### Example `requestOptions`
@@ -72,6 +74,19 @@ See [Guzzle Options](https://docs.guzzlephp.org/en/stable/request-options.html) 
     ],
 ],
 ```
+
+#### Example `allowedPrivateHosts`
+
+Feed and asset URLs are only fetched over `http` or `https`, and are rejected if their hostname is an IP address or resolves to a private IP address. To import from a host on a private network (or a local development environment), list it here:
+
+```php
+'allowedPrivateHosts' => [
+    'feeds.internal',
+    '*.ddev.site',
+],
+```
+
+Loopback, link-local and cloud-metadata addresses are always rejected, even for listed hosts.
 
 ## Control Panel
 
