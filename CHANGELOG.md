@@ -1,5 +1,28 @@
 # Release Notes for Feed Me 4.x
 
+## 4.9.2 - 2026-10-14
+
+> [!WARNING]
+> Feed and asset URLs must now use `http` or `https`, and are rejected if they resolve to private IP addresses, unless their hostname is listed in the new `allowedPrivateHosts` config setting.
+> Local feed and asset files can no longer be read from dotfiles, Craft system directories, the filesystem root or sensitive OS directories.
+> The `parseTwig` setting no longer has any effect. Feed data is never rendered as Twig.
+
+- Feed Me now requires PHP 7.4 or later.
+- The package is now `supercool/feed-me`, which replaces `craftcms/feed-me`.
+- Added the `allowedPrivateHosts` config setting.
+- `allowedPrivateHosts`, `clientOptions`, `requestOptions` and `feedOptions` are no longer saved to the project config.
+- Removed the “Clear pending job queue” button and the `feed-me/base/clear-tasks` action. Use Craft’s Queue Manager utility instead.
+- Feed Me’s settings page now requires an admin account.
+- Pagination URLs that don’t use `http` or `https` are now ignored.
+- Bundled a PHP 7.4-compatible port of [craftcms/url-validator](https://github.com/craftcms/url-validator) 1.2.0 (MIT).
+- Fixed a high-severity remote code execution vulnerability when the `parseTwig` config setting is enabled. (GHSA-r7f2-vrpq-8xhm)
+- Fixed a high-severity file read and SSRF vulnerability via feed URLs. (GHSA-xhcc-j4vq-7qvh)
+- Fixed a high-severity file read and SSRF vulnerability via asset URLs and paths. (GHSA-wq63-9pmc-5mwx)
+- Fixed a moderate-severity authorization bypass vulnerability. (GHSA-h39w-mqrj-63wh)
+- Fixed a high-severity missing authorization vulnerability. (GHSA-jq8j-33m8-2rhx)
+- Fixed medium-severity SSRF vulnerabilities. (GHSA-v533-4rcx-hc48, GHSA-g2p2-gwh8-c64r, GHSA-g8mg-7c85-qg77)
+- Fixed a missing authorization vulnerability where any logged-in user could clear the queue.
+
 ## 4.9.1 - 2023-10-31
 
 - Applied patch to respect bool and numeric values for lightswitches

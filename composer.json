@@ -29,12 +29,16 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "php": "^7.4 || ^8.0",
     "craftcms/cms": "^3.7.0",
     "cakephp/utility": "^3.3.12",
     "jakeasmith/http_build_url": "^1.0",
     "nesbot/carbon": "^1.22 || ^2.10",
     "league/csv": "^8.2 || ^9.0",
     "seld/jsonlint": "^1.7"
+  },
+  "replace": {
+    "craftcms/feed-me": "self.version"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
@@ -64,7 +68,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.2.5"
+      "php": "7.4"
     },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
