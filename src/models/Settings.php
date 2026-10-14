@@ -65,6 +65,8 @@ class Settings extends Model
 
     /**
      * @var bool
+     * @deprecated Parsing feed data as Twig has been disabled for security reasons. This setting is ignored and
+     * only kept so existing config files continue to work.
      */
     public bool $parseTwig = false;
 

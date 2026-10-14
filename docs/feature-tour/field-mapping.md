@@ -83,11 +83,7 @@ Other fields that store simple text values (like [Redactor](https://plugins.craf
 
 ## Default Values
 
-When the source for a native or custom field is set to “Use default value,” you may provide a value in the third column that will supersede any default value defined by the field itself. If `parseTwig` is enabled in your [Configuration](../get-started/configuration.md), textual fields are treated as Twig “object templates,” and have access to other fields on the element you're importing:
-
-```txt
-{title} was last imported on {{ now | date }}
-```
+When the source for a native or custom field is set to “Use default value,” you may provide a value in the third column that will supersede any default value defined by the field itself. Default values are imported as-is; they are not parsed as Twig (the `parseTwig` setting has been disabled for security reasons).
 
 ## Unique Identifiers
 

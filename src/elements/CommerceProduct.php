@@ -395,7 +395,10 @@ class CommerceProduct extends Element
             }
         }
 
-        $parseTwig = Plugin::$plugin->service->getConfig('parseTwig', $feed['id']);
+        // Parsing feed data as Twig is disabled for security reasons (GHSA-r7f2), regardless of the `parseTwig` setting
+        if (Plugin::$plugin->service->getConfig('parseTwig', $feed['id'])) {
+            DataHelper::warnParseTwigDisabled($feed['id']);
+        }
 
         foreach ($variantData as $variantContent) {
             $attributeData = [];
@@ -406,7 +409,7 @@ class CommerceProduct extends Element
                 if (Hash::get($fieldInfo, 'attribute')) {
                     $attributeValue = DataHelper::fetchValue(Hash::get($fieldInfo, 'data'), $fieldInfo, $this->feed);
 
-                    $attributeData[$fieldHandle] = $parseTwig ? DataHelper::parseFieldDataForElement($attributeValue, $this->element) : $attributeValue;
+                    $attributeData[$fieldHandle] = $attributeValue;
                 }
             }
 

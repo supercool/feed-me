@@ -15,6 +15,11 @@ use Throwable;
 
 class DataHelper
 {
+    /**
+     * @var bool Whether the warning about the disabled `parseTwig` setting has already been logged.
+     */
+    private static bool $_parseTwigWarningLogged = false;
+
     // Public Methods
     // =========================================================================
 
@@ -224,22 +229,41 @@ class DataHelper
     }
 
     /**
+     * Previously rendered the value as a Twig object template against the element when `parseTwig` was enabled.
+     *
+     * Feed data is untrusted and must never be rendered as Twig (GHSA-r7f2), so this is now a no-op that returns
+     * the value unchanged, regardless of the `parseTwig` setting.
+     *
      * @param $value
      * @param $element
      * @return mixed|string
      */
     public static function parseFieldDataForElement($value, $element): mixed
     {
-        if (is_string($value) && str_contains($value, '{')) {
-            // Make sure to wrap in try/catch, as if this is a literal '{' in content somewhere
-            // it won't be a field handle tag, causing the Twig Lexer to freak out. We ignore those errors
-            try {
-                $value = Craft::$app->getView()->renderObjectTemplate($value, $element);
-            } catch (Throwable $e) {
-            }
+        return $value;
+    }
+
+    /**
+     * Logs a warning (once per request) that the `parseTwig` setting is enabled but no longer has any effect.
+     *
+     * @param int|string|null $feedId
+     */
+    public static function warnParseTwigDisabled(int|string|null $feedId = null): void
+    {
+        if (self::$_parseTwigWarningLogged) {
+            return;
         }
 
-        return $value;
+        self::$_parseTwigWarningLogged = true;
+
+        $message = 'The `parseTwig` setting is enabled, but parsing feed data as Twig has been disabled for security reasons and the setting is ignored.';
+
+        Craft::warning($message . ($feedId ? " (feed $feedId)" : ''), __METHOD__);
+
+        try {
+            Plugin::info($message);
+        } catch (Throwable $e) {
+        }
     }
 
     /**
