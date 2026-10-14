@@ -1,5 +1,24 @@
 # Release Notes for Feed Me
 
+## 5.14.0.1 - 2026-10-14
+
+> [!WARNING]
+> Feed and asset URLs that resolve to private IP addresses are now rejected, unless their hostname is listed in the `allowedPrivateHosts` config setting.
+> The `parseTwig` config setting no longer has any effect; feed data and default values are never parsed as Twig.
+
+Supercool security release (`supercool/feed-me`, replaces `craftcms/feed-me`), backporting the Feed Me 6.14.0–6.16.1 security fixes to the Craft 4 line.
+
+- Feed data and default values are no longer parsed as Twig, regardless of the `parseTwig` setting. A warning is logged if it’s enabled. (GHSA-r7f2-vrpq-8xhm)
+- Fixed a high-severity file read and SSRF vulnerability via feed URLs. Local feed paths can no longer be dotfiles or within Craft system or OS-sensitive directories, and remote feed URLs are validated, IP-pinned and checked on every redirect. (GHSA-xhcc-j4vq-7qvh)
+- Fixed a high-severity file read and SSRF vulnerability via asset URLs and paths. (GHSA-wq63-9pmc-5mwx)
+- Fixed a moderate-severity authorization bypass vulnerability. Feed and log controller actions now require access to Feed Me. (GHSA-h39w-mqrj-63wh)
+- Fixed a high-severity missing authorization vulnerability when running feeds. (GHSA-jq8j-33m8-2rhx)
+- Fixed medium-severity SSRF vulnerabilities. URLs resolving to private, reserved, loopback, link-local or cloud metadata IPs are rejected. (GHSA-v533-4rcx-hc48, GHSA-g2p2-gwh8-c64r, GHSA-g8mg-7c85-qg77)
+- Added the `allowedPrivateHosts` config setting.
+- Pagination URLs are now only followed if they’re http or https URLs.
+- The “Clear pending job queue” utility now requires an admin and a POST request.
+- Feed Me now requires `craftcms/url-validator` ^1.2.
+
 ## 5.14.0 - 2025-10-30
 
 - Multiple feeds queued via a single CLI command are now processed sequentially, even if they’re batched. ([#1695](https://github.com/craftcms/feed-me/issues/1695))
