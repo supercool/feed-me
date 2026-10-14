@@ -5,14 +5,22 @@ namespace craft\feedme\helpers;
 use Cake\Utility\Hash;
 use Craft;
 use craft\elements\Asset as AssetElement;
+use craft\feedme\helpers\urlvalidator\GuzzleMiddleware;
+use craft\feedme\helpers\urlvalidator\UrlValidationException;
 use craft\feedme\Plugin;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use GuzzleHttp\RequestOptions;
 
 class AssetHelper
 {
+    /**
+     * @var int The maximum number of redirects followed when downloading a file.
+     */
+    private const MAX_REDIRECTS = 10;
+
     // Public Methods
     // =========================================================================
 
@@ -26,30 +34,121 @@ class AssetHelper
      */
     public static function downloadFile($srcName, $dstName, $chunkSize = 1, $returnbytes = true, $feedId = null)
     {
+        $curlOptResolve = null;
+        $srcName = (string)Craft::getAlias($srcName);
+
+        if (BaseHelper::isLocalPath($srcName) && @file_exists($srcName)) {
+            error_clear_last();
+
+            $srcName = realpath($srcName);
+
+            if (!$srcName) {
+                return false;
+            }
+
+            // disallow dotfiles, and files within one of the restricted directories
+            if (!BaseHelper::isFilepathAllowed($srcName)) {
+                return false;
+            }
+        } else {
+            // validate
+            try {
+                $curlOptResolve = BaseHelper::urlValidator()->curlResolve($srcName);
+            } catch (UrlValidationException $e) {
+                return false;
+            }
+        }
+
         $assetDownloadCurl = Plugin::$plugin->service->getConfig('assetDownloadCurl', $feedId);
 
         // Provide some legacy support
         if ($assetDownloadCurl) {
-            $ch = curl_init($srcName);
             $fp = fopen($dstName, 'wb');
+            $url = $srcName;
+            $redirects = 0;
 
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            while (true) {
+                $ch = curl_init($url);
 
-            curl_exec($ch);
-            curl_close($ch);
+                // only keep the body of the final response
+                ftruncate($fp, 0);
+                rewind($fp);
+
+                curl_setopt($ch, CURLOPT_FILE, $fp);
+                // redirects are followed manually, so that each redirect target can be validated
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+                if ($curlOptResolve !== null) {
+                    curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+                    // Pin the hostname/port to the IPs we just validated.
+                    curl_setopt($ch, CURLOPT_RESOLVE, $curlOptResolve);
+                }
+
+                curl_exec($ch);
+                $statusCode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+                $redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+                curl_close($ch);
+
+                if ($curlOptResolve === null || $statusCode < 300 || $statusCode >= 400 || !$redirectUrl) {
+                    break;
+                }
+
+                try {
+                    if (self::MAX_REDIRECTS <= $redirects++) {
+                        throw new UrlValidationException("Too many redirects for $srcName.");
+                    }
+
+                    $curlOptResolve = BaseHelper::urlValidator()->curlResolve($redirectUrl);
+                } catch (UrlValidationException $e) {
+                    fclose($fp);
+
+                    return false;
+                }
+
+                $url = $redirectUrl;
+            }
 
             return fclose($fp);
         }
 
         $newChunkSize = $chunkSize * (1024 * 1024);
         $bytesCount = 0;
-        $handle = fopen($srcName, 'rb');
-        $fp = fopen($dstName, 'wb');
+        $url = $srcName;
+        $context = null;
+        if ($curlOptResolve !== null) {
+            // redirects are followed manually, so that each redirect target can be validated
+            $context = stream_context_create(['http' => ['follow_location' => 0]]);
+            $handle = fopen($url, 'rb', false, $context);
+        } else {
+            $handle = fopen($url, 'rb');
+        }
 
         if ($handle === false) {
             return false;
         }
+
+        $redirects = 0;
+        while ($context !== null && ($location = self::getRedirectLocation($handle)) !== null) {
+            fclose($handle);
+
+            try {
+                if (self::MAX_REDIRECTS <= $redirects++) {
+                    throw new UrlValidationException("Too many redirects for $srcName.");
+                }
+
+                $url = BaseHelper::resolveRedirectUrl($url, $location);
+                BaseHelper::urlValidator()->validate($url);
+            } catch (\Throwable $e) {
+                return false;
+            }
+
+            $handle = fopen($url, 'rb', false, $context);
+
+            if ($handle === false) {
+                return false;
+            }
+        }
+
+        $fp = fopen($dstName, 'wb');
 
         while (!feof($handle)) {
             $data = fread($handle, $newChunkSize);
@@ -106,18 +205,23 @@ class AssetHelper
 
                 Plugin::info('Fetching remote image `{i}` - `{j}`', ['i' => $url, 'j' => $filename]);
 
+                $downloadFileResult = true;
                 if (!$cachedImage) {
-                    self::downloadFile($url, $fetchedImage, 1, true, $feed['id']);
+                    $downloadFileResult = self::downloadFile($url, $fetchedImage, 1, true, $feed['id']);
                 } else {
                     $fetchedImage = $cachedImage[0];
                 }
 
-                $result = self::createAsset($fetchedImage, $filename, $folderId, $field, $element, $conflict, Hash::get($feed, 'updateSearchIndexes'));
-
-                if ($result) {
-                    $uploadedAssets[] = $result;
-                } else {
+                if ($downloadFileResult === false) {
                     Plugin::error('Failed to create asset from `{i}`', ['i' => $url]);
+                } else {
+                    $result = self::createAsset($fetchedImage, $filename, $folderId, $field, $element, $conflict, Hash::get($feed, 'updateSearchIndexes'));
+
+                    if ($result) {
+                        $uploadedAssets[] = $result;
+                    } else {
+                        Plugin::error('Failed to create asset from `{i}`', ['i' => $url]);
+                    }
                 }
             } catch (\Throwable $e) {
                 if ($field) {
@@ -328,18 +432,33 @@ class AssetHelper
 
         // If we can't easily determine the extension of the url, fetch it
         if (!$extension) {
+            // validate
+            try {
+                $curlOptResolve = BaseHelper::urlValidator()->curlResolve((string)$url);
+            } catch (UrlValidationException $e) {
+                return '';
+            }
+
             $client = Plugin::$plugin->service->createGuzzleClient();
             $response = null;
+            // Pin the hostname/port to the IPs we just validated.
+            $options = ['curl' => [CURLOPT_RESOLVE => $curlOptResolve]];
+
+            // validate and pin every redirect target too
+            if (!GuzzleMiddleware::attach($client, BaseHelper::urlValidator())) {
+                // the client uses a custom handler, so only the pinned URL can be validated; don't follow redirects
+                $options[RequestOptions::ALLOW_REDIRECTS] = false;
+            }
 
             // Try using HEAD requests (for performance), if it fails use GET
             try {
-                $response = $client->head($url);
+                $response = $client->head($url, $options);
             } catch (\Throwable $e) {
             }
 
             try {
                 if (!$response) {
-                    $response = $client->get($url);
+                    $response = $client->get($url, $options);
                 }
             } catch (\Throwable $e) {
             }
@@ -357,5 +476,28 @@ class AssetHelper
         }
 
         return StringHelper::toLowerCase($extension);
+    }
+
+    /**
+     * Returns the Location header of an HTTP stream's response if it's a redirect.
+     *
+     * @param resource $handle
+     * @return string|null
+     */
+    private static function getRedirectLocation($handle)
+    {
+        $headers = stream_get_meta_data($handle)['wrapper_data'] ?? null;
+
+        if (!is_array($headers) || !preg_match('/^HTTP\/\S+\s+3\d\d\b/i', $headers[0] ?? '')) {
+            return null;
+        }
+
+        foreach ($headers as $header) {
+            if (stripos($header, 'Location:') === 0) {
+                return trim(substr($header, 9));
+            }
+        }
+
+        return null;
     }
 }
